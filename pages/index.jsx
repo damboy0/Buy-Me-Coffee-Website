@@ -180,11 +180,13 @@ export default function Home() {
 
   useEffect(() => {
     let buyMeACoffee;
-    isWalletConnected();
-    getMemos();
+    const { ethereum } = window;
 
-    // Create an event handler function for when someone sends
-    // us a new memo.
+    const fetchData = async () => {
+      await isWalletConnected();
+      await getMemos();
+    };
+
     const onNewMemo = (from, timestamp, name, message) => {
       console.log("Memo received: ", from, timestamp, name, message);
       setMemos((prevState) => [
@@ -198,23 +200,26 @@ export default function Home() {
       ]);
     };
 
-    const { ethereum } = window;
+    const setupEventListeners = async () => {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum, "any");
+        const signer = provider.getSigner();
+        buyMeACoffee = new ethers.Contract(contractAddress, contractABI, signer);
 
-    // Listen for new memo events.
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum, "any");
-      const signer = provider.getSigner();
-      buyMeACoffee = new ethers.Contract(contractAddress, contractABI, signer);
+        buyMeACoffee.on("NewMemo", onNewMemo);
+      }
+    };
 
-      buyMeACoffee.on("NewMemo", onNewMemo);
-    }
+    fetchData();
+    setupEventListeners();
 
     return () => {
       if (buyMeACoffee) {
         buyMeACoffee.off("NewMemo", onNewMemo);
       }
     };
-  }, []);
+  }, [isWalletConnected, getMemos, contractAddress, contractABI]);
+
 
   return (
     <div className={styles.container}>
@@ -230,7 +235,7 @@ export default function Home() {
         {currentAccount ? (
           <div>
             <form>
-              <div class="formgroup">
+              <div className="formgroup">
                 <label>Name</label>
                 <br />
 
@@ -242,7 +247,7 @@ export default function Home() {
                 />
               </div>
               <br />
-              <div class="formgroup">
+              <div className="formgroup">
                 <label>Send Damboy a message</label>
                 <br />
 
@@ -288,7 +293,7 @@ export default function Home() {
                 margin: "5px",
               }}
             >
-              <p style={{ "font-weight": "bold" }}>"{memo.message}"</p>
+              <p style={{ fontWeight: "bold" }}>&quot;{memo.message}&quot;</p>
               <p>
                 From: {memo.name} at {memo.timestamp.toString()}
               </p>
