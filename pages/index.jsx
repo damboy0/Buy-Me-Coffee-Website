@@ -96,7 +96,7 @@ export default function Home() {
           signer
         );
 
-        console.log("buying coffee..");
+        console.log("buying small coffee..");
         const coffeeTxn = await buyMeACoffee.buyCoffee(
           name ? name : "anon",
           message ? message : "Enjoy your coffee!",
@@ -204,7 +204,11 @@ export default function Home() {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum, "any");
         const signer = provider.getSigner();
-        buyMeACoffee = new ethers.Contract(contractAddress, contractABI, signer);
+        buyMeACoffee = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
 
         buyMeACoffee.on("NewMemo", onNewMemo);
       }
@@ -218,8 +222,7 @@ export default function Home() {
         buyMeACoffee.off("NewMemo", onNewMemo);
       }
     };
-  }, [isWalletConnected, getMemos, contractAddress, contractABI]);
-
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -303,7 +306,7 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <a
-          href="https://alchemy.com/?a=roadtoweb3weektwo"
+          href="https://twitter.com/only1dami"
           target="_blank"
           rel="noopener noreferrer"
         >
